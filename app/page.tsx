@@ -12,6 +12,7 @@ function Home() {
   const controls = useRef<OrbitControls | null>(null);
   const blocks = useRef<THREE.Mesh[]>([]);
   const [puzzleSize, setPuzzleSize] = useState<number>(4);
+  const [puzzleInput, setPuzzleInput] = useState<string>('');
   const [puzzleValues, setPuzzleValues] = useState<number[][]>(initializePuzzle(4));
 
   useEffect(() => {
@@ -38,12 +39,12 @@ function Home() {
         const blockGeometry = new THREE.BoxGeometry(blockSize, puzzleValues[i][j] * blockSize, blockSize);
         const blockMaterial = new THREE.MeshBasicMaterial({ color: getColor(puzzleValues[i][j]) });
         const blockMesh = new THREE.Mesh(blockGeometry, blockMaterial);
-
+    
         // Calculate center offset
-        const offsetX = -totalSizeX / 2 + blockSize / 2;
-        const offsetY = -totalSizeZ / 2 + blockSize / 2;
-
-        blockMesh.position.set(i * blockSize + offsetX, (puzzleValues[i][j] / 2) * blockSize, j * blockSize + offsetY);
+        const offsetY = -totalSizeX / 2 + (blockSize * i) + blockSize / 2;
+        const offsetX = -totalSizeZ / 2 + (blockSize * j) + blockSize / 2;
+    
+        blockMesh.position.set(offsetX, (puzzleValues[i][j] / 2) * blockSize, offsetY);
         scene.current.add(blockMesh);
         blocks.current.push(blockMesh);
       }
@@ -56,6 +57,12 @@ function Home() {
     };
 
     animate();
+    return () => {
+      for (const block of blocks.current) {
+        scene.current.remove(block);
+      }  
+      blocks.current = [];
+    }
   }, [puzzleValues]);
 
   const getColor = (value: number) => {
@@ -86,13 +93,46 @@ function Home() {
   }
 
   const handlePuzzleChange = () => {
+    const numbers = puzzleInput.match(/\d+/g);
+    
+    if (!numbers || numbers.length === 0) {
+      alert('No matching numbers found');
+      return;
+    }
+  
+    const numArr: string = numbers[0];
+  
+    if (numArr.length !== puzzleSize * puzzleSize) {
+      alert('Input Size different: ' + `${numArr.length}`);
+      return;
+    }
+  
+    const parsedArray: number[][] = numArr.split('').map(Number).reduce((acc, num, index) => {
+      const rowIndex = Math.floor(index / puzzleSize);
+      if (!acc[rowIndex]) {
+        acc[rowIndex] = [];
+      }
+      acc[rowIndex].push(num);
+      return acc;
+    }, [] as number[][]);
+  
+    console.log(parsedArray);
+    setPuzzleValues(parsedArray);
   };
+  
+  const setPuzzleResize = (size: number) => {
+    if (size < 4 || size > 9) {
+      alert('Puzzle size must be range 4 ~ 10');
+      return;
+    }
+    setPuzzleSize(size);
+  }
 
   return (
     <div>
       <canvas ref={canvasRef} className="w-full" style={{ height: '80vh' }}></canvas>
 
-      <div className="mt-4">
+      <div className="mx-4">
         <label htmlFor="puzzleSize" className="block text-sm font-medium text-gray-700">
           Puzzle Size:
         </label>
@@ -102,11 +142,12 @@ function Home() {
           name="puzzleSize"
           className="mt-1 p-2 border rounded-md"
           value={puzzleSize}
-          onChange={(e) => setPuzzleSize(parseInt(e.target.value, 10))}
+          onChange={(e) => setPuzzleResize(parseInt(e.target.value, 10))}
         />
       </div>
 
-      <div className="mt-4">
+      <div>
+      <div className="mx-4">
         <label htmlFor="puzzleHeight" className="block text-sm font-medium text-gray-700">
           Puzzle Input: {puzzleSize * puzzleSize}
         </label>
@@ -115,12 +156,18 @@ function Home() {
           id="puzzleHeight"
           name="puzzleHeight"
           className="mt-1 p-2 border rounded-md"
+          value={puzzleInput}
+          onChange={(e) => setPuzzleInput(e.target.value)}
         />
       </div>
 
-      <button onClick={handlePuzzleChange} className="mt-4 p-2 bg-blue-500 text-white rounded-md">
+      <button
+        onClick={handlePuzzleChange}
+        className="mt-4 mx-4 p-2 bg-blue-500 text-white rounded-md"
+      >
         Change Puzzle Size
       </button>
+    </div>
     </div>
   );
 }
