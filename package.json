@@ -1,7 +1,7 @@
 {
   "private": true,
   "style": "app/styles/tailwind.css",
-  "homepage": "https://JaeJunday.github.io/aladdin",
+  "homepage": "https://JaeJunday.github.io/skyscraper",
   "scripts": {
     "dev": "next dev --turbo",
     "build": "next build",

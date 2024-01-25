@@ -1,1 +1,1 @@
-https://jaejunday.github.io/aladdin/
+https://jaejunday.github.io/skyscraper/
