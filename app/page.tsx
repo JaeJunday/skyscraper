@@ -15,22 +15,35 @@ function Home() {
   const [puzzleValues, setPuzzleValues] = useState<number[][]>(initializePuzzle(4));
 
   useEffect(() => {
+
+    if (!canvasRef.current)
+      return;
+
     // Initialize camera, renderer, and controls here
-    camera.current = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.current = new THREE.PerspectiveCamera(75, canvasRef.current.clientWidth / canvasRef.current.clientHeight, 0.1, 1000);
     renderer.current = new THREE.WebGLRenderer({ canvas: canvasRef.current! });
     controls.current = new OrbitControls(camera.current, renderer.current.domElement);
-
-    renderer.current.setSize(window.innerWidth, window.innerHeight);
-    camera.current.position.z = 5;
+  
+    renderer.current.setSize(canvasRef.current.clientWidth, canvasRef.current.clientHeight);
+    camera.current.position.set(0, 5, 5);
+    camera.current.position.y = 8;
 
     const blockSize = 1;
+
+    const totalSizeX = puzzleValues.length * blockSize;
+    const totalSizeZ = puzzleValues[0].length * blockSize;
 
     for (let i = 0; i < puzzleValues.length; i++) {
       for (let j = 0; j < puzzleValues[i].length; j++) {
         const blockGeometry = new THREE.BoxGeometry(blockSize, puzzleValues[i][j] * blockSize, blockSize);
         const blockMaterial = new THREE.MeshBasicMaterial({ color: getColor(puzzleValues[i][j]) });
         const blockMesh = new THREE.Mesh(blockGeometry, blockMaterial);
-        blockMesh.position.set(i * blockSize, (puzzleValues[i][j] / 2) * blockSize, j * blockSize);
+
+        // Calculate center offset
+        const offsetX = -totalSizeX / 2 + blockSize / 2;
+        const offsetY = -totalSizeZ / 2 + blockSize / 2;
+
+        blockMesh.position.set(i * blockSize + offsetX, (puzzleValues[i][j] / 2) * blockSize, j * blockSize + offsetY);
         scene.current.add(blockMesh);
         blocks.current.push(blockMesh);
       }
@@ -68,27 +81,46 @@ function Home() {
       [2, 1, 4, 3],
       [3, 4, 1, 2],
     ];
-    
+
     return values;
-  };
+  }
 
   const handlePuzzleChange = () => {
-    const newSize = prompt("Enter puzzle size:");
-    if (newSize) {
-      const size = parseInt(newSize.trim(), 10);
-      if (size > 0) {
-        setPuzzleSize(size);
-        setPuzzleValues(initializePuzzle(size));
-      } else {
-        alert("Invalid size. Please enter a positive integer.");
-      }
-    }
   };
 
   return (
     <div>
-      <canvas ref={canvasRef} className="w-full h-screen"></canvas>
-      <button onClick={handlePuzzleChange}>Change Puzzle Size</button>
+      <canvas ref={canvasRef} className="w-full" style={{ height: '80vh' }}></canvas>
+
+      <div className="mt-4">
+        <label htmlFor="puzzleSize" className="block text-sm font-medium text-gray-700">
+          Puzzle Size:
+        </label>
+        <input
+          type="number"
+          id="puzzleSize"
+          name="puzzleSize"
+          className="mt-1 p-2 border rounded-md"
+          value={puzzleSize}
+          onChange={(e) => setPuzzleSize(parseInt(e.target.value, 10))}
+        />
+      </div>
+
+      <div className="mt-4">
+        <label htmlFor="puzzleHeight" className="block text-sm font-medium text-gray-700">
+          Puzzle Input: {puzzleSize * puzzleSize}
+        </label>
+        <input
+          type="text"
+          id="puzzleHeight"
+          name="puzzleHeight"
+          className="mt-1 p-2 border rounded-md"
+        />
+      </div>
+
+      <button onClick={handlePuzzleChange} className="mt-4 p-2 bg-blue-500 text-white rounded-md">
+        Change Puzzle Size
+      </button>
     </div>
   );
 }
