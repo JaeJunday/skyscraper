@@ -24,6 +24,7 @@ jobs:
         with:
           # 필요에 따라 액션에 전달할 입력 값 설정
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          api-key: ${{secrets.ANTHROPIC_API_KEY}}
 
       # 코드 리뷰 후 결과를 보고하는 단계
       - name: Post Review Results
