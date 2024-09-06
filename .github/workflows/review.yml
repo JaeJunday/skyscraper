@@ -3,7 +3,6 @@ name: Pull Request Code Review
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  push:
 
 jobs:
   code-review:
