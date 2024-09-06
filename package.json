@@ -6,7 +6,8 @@
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
-    "deploy": "touch out/.nojekyll && gh-pages -d out --dotfiles"
+    "deploy": "touch out/.nojekyll && gh-pages -d out --dotfiles",
+    "test": "git add . && git commit -m 'test' && git push origin main"
   },
   "dependencies": {
     "@opentelemetry/api": "1.4.0",
